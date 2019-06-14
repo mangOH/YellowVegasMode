@@ -1,0 +1,31 @@
+#!/bin/sh
+
+SetColour()
+{
+    blue=`expr $1 % 2`
+    green=`expr $1 / 2 % 2`
+    red=`expr $1 / 4 % 2`
+
+    if [ $blue -eq 1 -o $green -eq 1 -o $red -eq 1 ]
+    then
+        off=0
+    else
+        off=1
+    fi
+
+    dhubPush /app/leds/tri/red/enable $red
+    dhubPush /app/leds/tri/green/enable $green
+    dhubPush /app/leds/tri/blue/enable $blue
+    dhubPush /app/leds/mono/enable $off
+}
+
+# Trap SIGINT or SIGTERM and turn off all the LEDs before exiting.
+trap 'SetColour 0; dhubPush /app/leds/mono/enable false; exit 0' 2 15
+
+colour=0
+
+while true
+do
+    SetColour $colour
+    colour=`expr $colour + 1`
+done

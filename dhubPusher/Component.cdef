@@ -1,0 +1,12 @@
+sources:
+{
+    dhubPusher.c
+}
+
+requires:
+{
+    api:
+    {
+        dhubAdmin = admin.api
+    }
+}
