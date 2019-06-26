@@ -1,4 +1,29 @@
 #!/bin/sh
+#---------------------------------------------------------------------------------------------------
+# Implementation of "Vegas Mode" on the mangOH Yellow, which blinks the software-controlled LEDs.
+# This is intentionally a very CPU intensive way to do this that uses a lot of the Legato framework
+# so it can be used to identify opporunities for optimization.
+#
+# The environment variable VEGAS_MODE_USLEEP can be used to set the number of microseconds to
+# sleep between colour changes.  The default is zero.
+#
+# Copyright (C) Sierra Wireless Inc.
+#---------------------------------------------------------------------------------------------------
+
+sleepUS=0
+
+echo "VEGAS_MODE_USLEEP = $VEGAS_MODE_USLEEP"
+
+if [ "$VEGAS_MODE_USLEEP" ]
+then
+    if echo "$VEGAS_MODE_USLEEP" | egrep "^[0-9]+$" > /dev/null
+    then
+        sleepUS=$VEGAS_MODE_USLEEP
+    else
+        echo "Invalid number of microseconds in VEGAS_MODE_USLEEP: '$VEGAS_MODE_USLEEP'" >&2
+        exit 1;
+    fi
+fi
 
 SetColour()
 {
@@ -27,5 +52,6 @@ colour=0
 while true
 do
     SetColour $colour
+    usleep $sleepUS
     colour=`expr $colour + 1`
 done

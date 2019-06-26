@@ -9,6 +9,11 @@ processes:
     {
         ( /bin/vegas )
     }
+
+    envVars:
+    {
+        VEGAS_MODE_USLEEP = ${VEGAS_MODE_USLEEP}
+    }
 }
 
 bundles:
@@ -24,7 +29,15 @@ requires:
     file:
     {
         /bin/sh /bin/
+        /bin/echo /bin/
+        /bin/egrep /bin/
         /usr/bin/expr /bin/
+        /bin/usleep /bin/
+    }
+
+    device:
+    {
+        [rw] /dev/null /dev/
     }
 }
 
