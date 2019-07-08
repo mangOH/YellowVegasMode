@@ -1,12 +1,12 @@
 sources:
 {
-    dhubPusher.c
+    main.c
 }
 
 requires:
 {
     api:
     {
-        dhubAdmin = admin.api
+        dhubIO = io.api
     }
 }
