@@ -1,47 +1,17 @@
 executables:
 {
-    dhubPush = ( dhubPusher )
+    vegas = ( vegasMode )
 }
 
 processes:
 {
     run:
     {
-        ( /bin/vegas )
-    }
-
-    envVars:
-    {
-        VEGAS_MODE_USLEEP = ${VEGAS_MODE_USLEEP}
+        ( vegas )
     }
 }
 
-bundles:
+extern:
 {
-    file:
-    {
-        [rx] vegas /bin/
-    }
-}
-
-requires:
-{
-    file:
-    {
-        /bin/sh /bin/
-        /bin/echo /bin/
-        /bin/egrep /bin/
-        /usr/bin/expr /bin/
-        /bin/usleep /bin/
-    }
-
-    device:
-    {
-        [rw] /dev/null /dev/
-    }
-}
-
-bindings:
-{
-    dhubPush.dhubPusher.dhubAdmin -> dataHub.admin
+    vegas.vegasMode.dhubIO  // required API
 }
