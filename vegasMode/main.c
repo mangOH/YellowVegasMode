@@ -202,13 +202,13 @@ static void TriggeredPeriodHandler
 )
 //--------------------------------------------------------------------------------------------------
 {
-    if ((value <= 0) || (value > 0xFFFFFFFF) || isnan(value))
+    if (isnan(value) || (value <= 0.0) || ((value * 1000.0) > UINT32_MAX))
     {
         LE_ERROR("Ignoring insane configuration for triggered mode period (%lf seconds).", value);
     }
     else
     {
-        TriggeredModePeriod = (uint32_t)(value * 1000);
+        TriggeredModePeriod = (uint32_t)(value * 1000.0);
 
         if (InTriggeredMode)
         {
@@ -231,13 +231,13 @@ static void ContinuousPeriodHandler
 )
 //--------------------------------------------------------------------------------------------------
 {
-    if ((value <= 0) || (value > 0xFFFFFFFF) || isnan(value))
+    if (isnan(value) || (value <= 0.0) || ((value * 1000.0) > UINT32_MAX))
     {
         LE_ERROR("Ignoring insane configuration for continuous mode period (%lf seconds).", value);
     }
     else
     {
-        ContinuousModePeriod = (uint32_t)(value * 1000);
+        ContinuousModePeriod = (uint32_t)(value * 1000.0);
         if (!InTriggeredMode)
         {
             LE_ASSERT_OK(le_timer_SetMsInterval(Timer, ContinuousModePeriod));
