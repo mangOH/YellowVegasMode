@@ -61,10 +61,26 @@ static void UpdateLeds
 )
 //--------------------------------------------------------------------------------------------------
 {
-    dhubIO_PushBoolean(Led0ResPath, DHUBIO_NOW, (LedState & 1) != 0);
-    dhubIO_PushBoolean(Led1ResPath, DHUBIO_NOW, (LedState & 2) != 0);
-    dhubIO_PushBoolean(Led2ResPath, DHUBIO_NOW, (LedState & 4) != 0);
-    dhubIO_PushBoolean(Led3ResPath, DHUBIO_NOW, (LedState & 8) != 0);
+    static uint OldState = 0;
+
+    if ((OldState & 1) != (LedState & 1))
+    {
+        dhubIO_PushBoolean(Led0ResPath, DHUBIO_NOW, (LedState & 1) != 0);
+    }
+    if ((OldState & 2) != (LedState & 2))
+    {
+        dhubIO_PushBoolean(Led1ResPath, DHUBIO_NOW, (LedState & 2) != 0);
+    }
+    if ((OldState & 4) != (LedState & 4))
+    {
+        dhubIO_PushBoolean(Led2ResPath, DHUBIO_NOW, (LedState & 4) != 0);
+    }
+    if ((OldState & 8) != (LedState & 8))
+    {
+        dhubIO_PushBoolean(Led3ResPath, DHUBIO_NOW, (LedState & 8) != 0);
+    }
+
+    OldState = LedState;
 }
 
 
@@ -191,6 +207,38 @@ static void TriggeredCyclesHandler
 
 //--------------------------------------------------------------------------------------------------
 /**
+ * Convert a period configuration value from a double-precision floating point number of seconds
+ * into a 32-bit integer number of milliseconds for use with the Timer API.
+ *
+ * @return The number of milliseconds, or 0 on range error.
+ */
+//--------------------------------------------------------------------------------------------------
+static uint32_t SanitizePeriod
+(
+    double period
+)
+//--------------------------------------------------------------------------------------------------
+{
+    if (isnan(period))
+    {
+        return 0;
+    }
+
+    period *= 1000.0;   // Convert from seconds to ms.
+
+    // Note: At the time of writing, pushing LED changes through the DataHub more frequently
+    //       than once every 30 ms is likely to result in CPU saturation.
+    if ((period < 30.0) || (period > UINT32_MAX))
+    {
+        return 0;
+    }
+
+    return (uint32_t)period;
+}
+
+
+//--------------------------------------------------------------------------------------------------
+/**
  * Call-back that gets called by the Data Hub when the triggered mode period is updated.
  */
 //--------------------------------------------------------------------------------------------------
@@ -202,13 +250,15 @@ static void TriggeredPeriodHandler
 )
 //--------------------------------------------------------------------------------------------------
 {
-    if (isnan(value) || (value <= 0.0) || ((value * 1000.0) > UINT32_MAX))
+    uint32_t periodMs = SanitizePeriod(value);
+
+    if (periodMs == 0)
     {
         LE_ERROR("Ignoring insane configuration for triggered mode period (%lf seconds).", value);
     }
     else
     {
-        TriggeredModePeriod = (uint32_t)(value * 1000.0);
+        TriggeredModePeriod = periodMs;
 
         if (InTriggeredMode)
         {
@@ -231,13 +281,16 @@ static void ContinuousPeriodHandler
 )
 //--------------------------------------------------------------------------------------------------
 {
-    if (isnan(value) || (value <= 0.0) || ((value * 1000.0) > UINT32_MAX))
+    uint32_t periodMs = SanitizePeriod(value);
+
+    if (periodMs == 0)
     {
         LE_ERROR("Ignoring insane configuration for continuous mode period (%lf seconds).", value);
     }
     else
     {
-        ContinuousModePeriod = (uint32_t)(value * 1000.0);
+        ContinuousModePeriod = periodMs;
+
         if (!InTriggeredMode)
         {
             LE_ASSERT_OK(le_timer_SetMsInterval(Timer, ContinuousModePeriod));
