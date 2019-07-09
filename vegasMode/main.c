@@ -311,4 +311,10 @@ COMPONENT_INIT
     Timer = le_timer_Create("Vegas");
     LE_ASSERT_OK(le_timer_SetHandler(Timer, TimerExpiryHandler));
     le_timer_SetRepeat(Timer, 0 /* forever */);
+
+    if (IsContinuousModeEnabled)
+    {
+        StartContinuousMode();
+        UpdateLeds();
+    }
 }
